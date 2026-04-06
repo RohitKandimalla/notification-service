@@ -39,4 +39,19 @@ public class NotificationController {
     notificationService.deleteNotification(id);
     return ResponseEntity.noContent().build();
   }
+
+  @PatchMapping("/mark-seen")
+  public ResponseEntity<Void> markSeen(
+      @RequestBody List<String> ids, Principal principal) {
+    log.info("User [{}] - Marking {} notification(s) as seen", principal.getName(), ids.size());
+    notificationService.markSeen(ids);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PatchMapping("/mark-read/{id}")
+  public ResponseEntity<Void> markRead(@PathVariable String id, Principal principal) {
+    log.info("User [{}] - Marking notification [{}] as read", principal.getName(), id);
+    notificationService.markRead(id);
+    return ResponseEntity.noContent().build();
+  }
 }
