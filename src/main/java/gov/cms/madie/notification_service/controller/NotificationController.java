@@ -26,11 +26,11 @@ public class NotificationController {
   }
 
   @PostMapping
-  public ResponseEntity<Notification> createNotification(
-      @RequestBody Notification notification, Principal principal) {
-    log.info("User [{}] - Creating notification for user: {}", principal.getName(), notification.getUserId());
+  public ResponseEntity<List<Notification>> createNotification(
+      @RequestBody List<Notification> notifications, Principal principal) {
+    log.info("User [{}] - Creating {} notification(s)", principal.getName(), notifications.size());
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(notificationService.createNotification(notification));
+        .body(notificationService.createNotification(notifications));
   }
 
   @DeleteMapping("/{id}")

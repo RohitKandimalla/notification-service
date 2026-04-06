@@ -20,12 +20,14 @@ public class NotificationService {
     return notificationRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
   }
 
-  public Notification createNotification(Notification notification) {
-    notification.setCreatedAt(Instant.now());
-    notification.setRead(false);
-    notification.setSeen(false);
-    log.info("Creating notification for user: {}", notification.getUserId());
-    return notificationRepository.save(notification);
+  public List<Notification> createNotification(List<Notification> notifications) {
+    notifications.forEach(notification -> {
+      notification.setCreatedAt(Instant.now());
+      notification.setRead(false);
+      notification.setSeen(false);
+      log.info("Creating notification for user: {}", notification.getUserId());
+    });
+    return notificationRepository.saveAll(notifications);
   }
 
   public void deleteNotification(String id) {
