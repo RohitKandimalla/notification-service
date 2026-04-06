@@ -35,11 +35,6 @@ public class NotificationService {
     return notificationRepository.saveAll(notifications);
   }
 
-  public void deleteNotification(String id) {
-    log.info("Deleting notification with id: {}", id);
-    notificationRepository.deleteById(id);
-  }
-
   public void markSeen(List<String> ids) {
     log.info("Marking {} notification(s) as seen", ids.size());
     mongoTemplate.updateMulti(
@@ -54,5 +49,10 @@ public class NotificationService {
         Query.query(Criteria.where("_id").is(id)),
         Update.update("isRead", true),
         Notification.class);
+  }
+
+  public void deleteNotification(String id) {
+    log.info("Deleting notification with id: {}", id);
+    notificationRepository.deleteById(id);
   }
 }

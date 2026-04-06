@@ -33,13 +33,6 @@ public class NotificationController {
         .body(notificationService.createNotification(notifications));
   }
 
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteNotification(@PathVariable String id, Principal principal) {
-    log.info("User [{}] - Deleting notification with id: {}", principal.getName(), id);
-    notificationService.deleteNotification(id);
-    return ResponseEntity.noContent().build();
-  }
-
   @PatchMapping("/mark-seen")
   public ResponseEntity<Void> markSeen(
       @RequestBody List<String> ids, Principal principal) {
@@ -52,6 +45,13 @@ public class NotificationController {
   public ResponseEntity<Void> markRead(@PathVariable String id, Principal principal) {
     log.info("User [{}] - Marking notification [{}] as read", principal.getName(), id);
     notificationService.markRead(id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteNotification(@PathVariable String id, Principal principal) {
+    log.info("User [{}] - Deleting notification with id: {}", principal.getName(), id);
+    notificationService.deleteNotification(id);
     return ResponseEntity.noContent().build();
   }
 }
