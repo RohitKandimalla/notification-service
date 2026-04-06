@@ -1,5 +1,6 @@
 package gov.cms.madie.notification_service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "notifications")
+@JsonIgnoreProperties({"read", "seen"})
 public class Notification {
 
   @Id private String id;
