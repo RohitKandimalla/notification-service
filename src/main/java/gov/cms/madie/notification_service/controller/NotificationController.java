@@ -28,8 +28,8 @@ public class NotificationController {
   @PostMapping
   public ResponseEntity<List<Notification>> createNotification(
       @RequestBody Notification notification, Principal principal) {
-    log.info("User [{}] - Creating notification for {} user(s): message='{}', additionalLink='{}'",
-        principal.getName(), notification.getUserIds().size(), notification.getMessage(), notification.getAdditionalLink());
+    log.info("User [{}] - Creating notification: userIds={}, message='{}', additionalLink='{}'",
+        principal.getName(), notification.getUserIds(), notification.getMessage(), notification.getAdditionalLink());
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(notificationService.createNotification(notification));
   }

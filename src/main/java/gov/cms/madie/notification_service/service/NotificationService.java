@@ -1,5 +1,6 @@
 package gov.cms.madie.notification_service.service;
 
+import gov.cms.madie.notification_service.client.UserServiceClient;
 import gov.cms.madie.notification_service.model.Notification;
 import gov.cms.madie.notification_service.repository.NotificationRepository;
 import java.time.Instant;
@@ -11,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Slf4j
 @Service
@@ -19,6 +21,7 @@ public class NotificationService {
 
   private final NotificationRepository notificationRepository;
   private final MongoTemplate mongoTemplate;
+  private final UserServiceClient userServiceClient;
 
   public List<Notification> getNotificationsByUserId(String userId) {
     log.info("Fetching notifications for user: {}", userId);
@@ -26,7 +29,18 @@ public class NotificationService {
   }
 
   public List<Notification> createNotification(Notification request) {
-    List<Notification> notifications = request.getUserIds().stream()
+    List<String> userIds;
+
+    if (CollectionUtils.isEmpty(request.getUserIds())) {
+      log.info("No userIds provided — fetching all active users from user-service for global notification");
+      userIds = userServiceClient.getAllActiveUserHarpIds();
+      log.info("Fetched {} active user(s) from user-service", userIds.size());
+    } else {
+      log.info("Creating targeted notification for {} provided user(s)", request.getUserIds().size());
+      userIds = request.getUserIds();
+    }
+
+    List<Notification> notifications = userIds.stream()
         .map(userId -> Notification.builder()
             .userId(userId)
             .message(request.getMessage())
@@ -36,7 +50,6 @@ public class NotificationService {
             .createdAt(Instant.now())
             .build())
         .toList();
-    log.info("Creating {} notification(s) for {} user(s)", notifications.size(), request.getUserIds().size());
     return notificationRepository.saveAll(notifications);
   }
 
