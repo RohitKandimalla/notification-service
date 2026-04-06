@@ -7,8 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @Component
@@ -21,10 +24,10 @@ public class UserServiceClient {
   private String userServiceBaseUrl;
 
   public List<String> getAllActiveUserHarpIds() {
-    try {
-      String url = userServiceBaseUrl + "/api/admin/users/last-login";
-      log.info("Fetching all active MADiE user harpIds from user-service");
+    String url = userServiceBaseUrl + "/api/admin/users/last-login";
+    log.info("Fetching all active MADiE user harpIds from user-service");
 
+    try {
       List<UserLoginDto> users =
           userServiceRestTemplate
               .exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<List<UserLoginDto>>() {})
@@ -43,9 +46,12 @@ public class UserServiceClient {
       log.info("Retrieved {} active harpIds from user-service", harpIds.size());
       return harpIds;
 
+    } catch (HttpClientErrorException e) {
+      log.error("User-service returned {} when fetching all active users", e.getStatusCode());
+      throw new ResponseStatusException(e.getStatusCode(), "Failed to fetch users from user-service: " + e.getMessage());
     } catch (Exception e) {
       log.error("Failed to fetch users from user-service: {}", e.getMessage(), e);
-      return Collections.emptyList();
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch users from user-service");
     }
   }
 
