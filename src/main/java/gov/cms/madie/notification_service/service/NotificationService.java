@@ -25,13 +25,18 @@ public class NotificationService {
     return notificationRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
   }
 
-  public List<Notification> createNotification(List<Notification> notifications) {
-    notifications.forEach(notification -> {
-      notification.setCreatedAt(Instant.now());
-      notification.setRead(false);
-      notification.setSeen(false);
-      log.info("Creating notification for user: {}", notification.getUserId());
-    });
+  public List<Notification> createNotification(Notification request) {
+    List<Notification> notifications = request.getUserIds().stream()
+        .map(userId -> Notification.builder()
+            .userId(userId)
+            .message(request.getMessage())
+            .additionalLink(request.getAdditionalLink())
+            .isRead(false)
+            .isSeen(false)
+            .createdAt(Instant.now())
+            .build())
+        .toList();
+    log.info("Creating {} notification(s) for {} user(s)", notifications.size(), request.getUserIds().size());
     return notificationRepository.saveAll(notifications);
   }
 

@@ -3,6 +3,7 @@ package gov.cms.madie.notification_service.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,10 @@ public class Notification {
 
   /** harpId of the recipient */
   private String userId;
+
+  /** Request body only: not returned in response, not persisted — fans out into one document per userId on create */
+  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+  private List<String> userIds;
 
   /** Human-readable message, e.g. "Edwin updated Population Criteria for CMS123" */
   private String message;
