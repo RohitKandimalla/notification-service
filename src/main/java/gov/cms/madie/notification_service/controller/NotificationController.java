@@ -51,6 +51,15 @@ public class NotificationController {
     return ResponseEntity.noContent().build();
   }
 
+  @DeleteMapping
+  public ResponseEntity<Void> deleteNotifications(
+      @RequestBody List<String> ids, Principal principal) {
+    String userId = principal.getName().toLowerCase(Locale.ROOT);
+    log.info("User [{}] - Deleting {} notification(s)", userId, ids.size());
+    notificationService.deleteNotifications(ids, userId);
+    return ResponseEntity.noContent().build();
+  }
+
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteNotification(@PathVariable String id, Principal principal) {
     log.info("User [{}] - Deleting notification with id: {}", principal.getName(), id);

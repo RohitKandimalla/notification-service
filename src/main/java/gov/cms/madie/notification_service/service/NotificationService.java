@@ -73,4 +73,13 @@ public class NotificationService {
     log.info("Deleting notification with id: {}", id);
     notificationRepository.deleteById(id);
   }
+
+  public long deleteNotifications(List<String> ids, String userId) {
+    log.info("Deleting {} notification(s) for user: {}", ids.size(), userId);
+    var result = mongoTemplate.remove(
+        Query.query(Criteria.where("_id").in(ids).and("userId").is(userId)),
+        Notification.class);
+    log.info("Deleted {} notification(s) for user: {}", result.getDeletedCount(), userId);
+    return result.getDeletedCount();
+  }
 }
