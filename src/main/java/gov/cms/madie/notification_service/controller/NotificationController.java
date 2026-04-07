@@ -4,6 +4,8 @@ import gov.cms.madie.notification_service.model.Notification;
 import gov.cms.madie.notification_service.service.NotificationService;
 import java.security.Principal;
 import java.util.List;
+import java.util.Locale;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,7 +22,7 @@ public class NotificationController {
 
   @GetMapping
   public ResponseEntity<List<Notification>> getNotifications(Principal principal) {
-    String userId = principal.getName();
+    String userId = principal.getName().toLowerCase(Locale.ROOT);
     log.info("User [{}] - Fetching all notifications", userId);
     return ResponseEntity.ok(notificationService.getNotificationsByUserId(userId));
   }
