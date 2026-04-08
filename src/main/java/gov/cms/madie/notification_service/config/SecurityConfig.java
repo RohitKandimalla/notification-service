@@ -16,6 +16,7 @@ public class SecurityConfig {
 
   private static final String[] AUTH_WHITELIST = {
     "/actuator/**",
+    "/ws/**", // Browsers can't set HTTP headers on WS upgrades — JWT auth is handled by WebSocketAuthChannelInterceptor
   };
 
   @Bean

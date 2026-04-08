@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -22,6 +24,8 @@ public class NotificationService {
   private final NotificationRepository notificationRepository;
   private final MongoTemplate mongoTemplate;
   private final UserServiceClient userServiceClient;
+  private final SimpMessagingTemplate simpMessagingTemplate;
+  private final SimpUserRegistry simpUserRegistry;
 
   public List<Notification> getNotificationsByUserId(String userId) {
     log.info("Fetching notifications for user: {}", userId);
@@ -42,7 +46,7 @@ public class NotificationService {
 
     List<Notification> notifications = userIds.stream()
         .map(userId -> Notification.builder()
-            .userId(userId)
+            .userId(userId.toLowerCase())
             .message(request.getMessage())
             .additionalLink(request.getAdditionalLink())
             .isRead(false)
@@ -50,7 +54,27 @@ public class NotificationService {
             .createdAt(Instant.now())
             .build())
         .toList();
-    return notificationRepository.saveAll(notifications);
+    List<Notification> saved = notificationRepository.saveAll(notifications);
+
+    saved.forEach(notification -> {
+      try {
+        var simpUser = simpUserRegistry.getUser(notification.getUserId());
+        log.info("Pushing WebSocket notification to user [{}] — registry sessions found: {}",
+            notification.getUserId(), simpUser != null ? simpUser.getSessions().size() : 0);
+        // Push to the user's active WebSocket session(s) — no-op if user is not connected
+        simpMessagingTemplate.convertAndSendToUser(
+            notification.getUserId(),
+            "/queue/notifications",
+            notification);
+        log.info("WebSocket push completed for user [{}]", notification.getUserId());
+      } catch (Exception e) {
+        // Push failure must not fail the REST request — notification is already persisted in MongoDB
+        log.warn("Failed to push WebSocket notification to user [{}]: {}",
+            notification.getUserId(), e.getMessage());
+      }
+    });
+
+    return saved;
   }
 
   public void markSeen(List<String> ids) {
